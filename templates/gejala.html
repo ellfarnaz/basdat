@@ -1,0 +1,216 @@
+{% extends "base.html" %}
+
+{% block title %}Cari Penyakit Berdasarkan Gejala - SisPenGi{% endblock %}
+
+{% block content %}
+<!-- Hero Section -->
+<section class="py-5 bg-primary text-white">
+  <div class="container text-center">
+    <h1 class="display-4 mb-3">Cari Penyakit Gigi</h1>
+    <p class="lead">Pilih gejala yang Anda alami untuk menemukan informasi penyakit yang mungkin terkait</p>
+  </div>
+</section>
+
+<section class="py-5">
+  <div class="container">
+    <!-- Form Pencarian -->
+    <div class="row justify-content-center mb-5">
+      <div class="col-lg-8">
+        <div class="card shadow-sm border-0">
+          <div class="card-body p-4">
+            <form action="{{ url_for('gejala') }}" method="GET">
+              <div class="mb-4">
+                <select class="form-select" name="gejala[]" multiple data-placeholder="Pilih gejala yang Anda alami...">
+                  {% for gejala in gejala_list %}
+                  <option value="{{ gejala.id_gejala }}" {% if gejala.id_gejala|string in request.args.getlist('gejala[]') %}selected{% endif %}>
+                    {{ gejala.nama_gejala }}
+                  </option>
+                  {% endfor %}
+                </select>
+              </div>
+              <div class="text-center">
+                <button type="submit" class="btn btn-primary px-4 py-2">
+                  <i class="fas fa-search me-2"></i>Cari Penyakit
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    {% if selected_gejala %}
+    <div class="row justify-content-center mb-5">
+      <div class="col-lg-8">
+        <div class="card border-0 bg-light">
+          <div class="card-body p-4">
+            <h5 class="card-title mb-3">
+              <i class="fas fa-list-ul text-primary me-2"></i>Gejala yang Anda pilih:
+            </h5>
+            <ul class="list-group list-group-flush">
+              {% for gejala in selected_gejala %}
+              <li class="list-group-item bg-transparent">
+                <i class="fas fa-check text-success me-2"></i>{{ gejala.nama_gejala }}
+              </li>
+              {% endfor %}
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+    {% endif %}
+
+    {% if penyakit_list %}
+    <div class="text-center mb-4">
+      <h3>Penyakit yang Mungkin Terkait</h3>
+      <p class="text-muted">Ditemukan {{ penyakit_list|length }} penyakit yang memiliki gejala serupa</p>
+    </div>
+    
+    <div class="row g-4">
+      {% for penyakit in penyakit_list %}
+      <div class="col-md-6 col-lg-4">
+        <div class="card h-100 border-0 shadow-sm">
+          {% if penyakit.images %}
+          <img src="{{ url_for('static', filename='images/penyakit/' + penyakit.images) }}" class="card-img-top" alt="{{ penyakit.nama_penyakit }}" style="height: 200px; object-fit: cover">
+          {% else %}
+          <img src="{{ url_for('static', filename='images/default-tooth.jpg') }}" class="card-img-top" alt="Default" style="height: 200px; object-fit: cover">
+          {% endif %}
+          <div class="card-body">
+            <div class="d-flex justify-content-between align-items-center mb-2">
+              <h5 class="card-title mb-0">{{ penyakit.nama_penyakit }}</h5>
+              <span class="badge bg-primary">{{ penyakit.matched_symptoms }} Gejala Cocok</span>
+            </div>
+            <p class="card-text text-muted">{{ penyakit.desk_penyakit|truncate(100) }}</p>
+            
+            <div class="mt-3">
+              <h6 class="mb-2">Gejala yang cocok:</h6>
+              <ul class="list-unstyled">
+                {% for gejala in penyakit.gejala %}
+                {% if gejala.nama_gejala in selected_gejala|map(attribute='nama_gejala') %}
+                <li><i class="fas fa-check-circle text-success me-2"></i>{{ gejala.nama_gejala }}</li>
+                {% endif %}
+                {% endfor %}
+              </ul>
+            </div>
+            
+            <button class="btn btn-primary w-100 mt-3" data-bs-toggle="modal" data-bs-target="#penyakitModal{{ penyakit.id_penyakit }}">
+              <i class="fas fa-info-circle me-2"></i>Detail Lengkap
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Modal Detail Penyakit -->
+      <div class="modal fade" id="penyakitModal{{ penyakit.id_penyakit }}" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+          <div class="modal-content">
+            <div class="modal-header border-0">
+              <h5 class="modal-title">{{ penyakit.nama_penyakit }}</h5>
+              <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+              <div class="row g-4">
+                <div class="col-md-6">
+                  {% if penyakit.images %}
+                  <img src="{{ url_for('static', filename='images/penyakit/' + penyakit.images) }}" class="img-fluid rounded" alt="{{ penyakit.nama_penyakit }}">
+                  {% else %}
+                  <img src="{{ url_for('static', filename='images/default-tooth.jpg') }}" class="img-fluid rounded" alt="Default">
+                  {% endif %}
+                </div>
+                <div class="col-md-6">
+                  <div class="mb-4">
+                    <h6 class="fw-bold mb-2">Deskripsi:</h6>
+                    <p>{{ penyakit.desk_penyakit }}</p>
+                  </div>
+
+                  <div class="mb-4">
+                    <h6 class="fw-bold mb-2">Gejala:</h6>
+                    <ul class="list-unstyled">
+                      {% for gejala in penyakit.gejala %}
+                      <li class="mb-1">
+                        {% if gejala.nama_gejala in selected_gejala|map(attribute='nama_gejala') %}
+                        <i class="fas fa-check-circle text-success me-2"></i>
+                        {% else %}
+                        <i class="fas fa-circle text-muted me-2"></i>
+                        {% endif %}
+                        {{ gejala.nama_gejala }}
+                      </li>
+                      {% endfor %}
+                    </ul>
+                  </div>
+
+                  <div class="mb-4">
+                    <h6 class="fw-bold mb-2">Penyebab:</h6>
+                    <ul class="list-unstyled">
+                      {% for penyebab in penyakit.penyebab %}
+                      <li class="mb-1">
+                        <i class="fas fa-circle text-primary me-2"></i>
+                        {{ penyebab.nama_penyebab }}
+                      </li>
+                      {% endfor %}
+                    </ul>
+                  </div>
+
+                  {% if penyakit.saran %}
+                  <div class="alert alert-info">
+                    <h6 class="fw-bold mb-2">Saran Penanganan:</h6>
+                    <p class="mb-0">{{ penyakit.saran }}</p>
+                  </div>
+                  {% endif %}
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+    {% elif request.args.getlist('gejala[]') %}
+    <div class="text-center">
+      <div class="alert alert-info d-inline-block">
+        <i class="fas fa-info-circle me-2"></i>
+        Tidak ditemukan penyakit yang sesuai dengan gejala yang dipilih.
+      </div>
+    </div>
+    {% endif %}
+  </div>
+</section>
+
+{% block extra_css %}
+<link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+<style>
+  .select2-container--bootstrap-5 .select2-selection {
+    min-height: 100px;
+  }
+  .select2-container--bootstrap-5 .select2-selection--multiple .select2-selection__rendered {
+    padding: 0.5rem;
+  }
+  .select2-container--bootstrap-5 .select2-selection--multiple .select2-selection__choice {
+    background-color: #0d6efd;
+    color: white;
+    border: none;
+    padding: 0.25rem 0.5rem;
+    margin: 0.2rem;
+  }
+  .select2-container--bootstrap-5 .select2-selection--multiple .select2-selection__choice__remove {
+    color: white;
+    margin-right: 0.5rem;
+  }
+</style>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+<script>
+  $(document).ready(function() {
+    $('.form-select').select2({
+      theme: 'bootstrap-5',
+      width: '100%',
+      placeholder: 'Pilih gejala yang Anda alami...',
+      allowClear: true
+    });
+  });
+</script>
+{% endblock %}
+{% endblock %} 

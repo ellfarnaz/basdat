@@ -1,0 +1,71 @@
+{% extends "base.html" %} {% block title %}Daftar Penyakit Gigi - SisPenGi{% endblock %} {% block content %}
+<section class="py-5">
+  <div class="container">
+    <h2 class="text-center mb-4">Daftar Penyakit Gigi</h2>
+    <div class="row g-4">
+      {% for penyakit in penyakit_list %}
+      <div class="col-md-4">
+        <div class="card h-100">
+          {% if penyakit.images %}
+          <img src="{{ url_for('static', filename='images/penyakit/' + penyakit.images) }}" class="card-img-top" alt="{{ penyakit.nama_penyakit }}" style="height: 200px; object-fit: cover" />
+          {% else %}
+          <img src="{{ url_for('static', filename='images/default-tooth.jpg') }}" class="card-img-top" alt="Default" style="height: 200px; object-fit: cover" />
+          {% endif %}
+          <div class="card-body">
+            <h5 class="card-title">{{ penyakit.nama_penyakit }}</h5>
+            <p class="card-text text-muted">{{ penyakit.desk_penyakit|truncate(100) }}</p>
+            <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#penyakitModal{{ penyakit.id_penyakit }}">Baca Selengkapnya</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Modal Detail Penyakit -->
+      <div class="modal fade" id="penyakitModal{{ penyakit.id_penyakit }}" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+          <div class="modal-content">
+            <div class="modal-header">
+              <h5 class="modal-title">{{ penyakit.nama_penyakit }}</h5>
+              <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+              <div class="row">
+                <div class="col-md-6">
+                  {% if penyakit.images %}
+                  <img src="{{ url_for('static', filename='images/penyakit/' + penyakit.images) }}" class="img-fluid rounded" alt="{{ penyakit.nama_penyakit }}" />
+                  {% else %}
+                  <img src="{{ url_for('static', filename='images/default-tooth.jpg') }}" class="img-fluid rounded" alt="Default" />
+                  {% endif %}
+                </div>
+                <div class="col-md-6">
+                  <h6 class="mb-3">Deskripsi:</h6>
+                  <p>{{ penyakit.desk_penyakit }}</p>
+
+                  <h6 class="mb-3">Gejala:</h6>
+                  <ul>
+                    {% for gejala in penyakit.gejala %}
+                    <li>{{ gejala.nama_gejala }}</li>
+                    {% endfor %}
+                  </ul>
+
+                  <h6 class="mb-3">Penyebab:</h6>
+                  <ul>
+                    {% for penyebab in penyakit.penyebab %}
+                    <li>{{ penyebab.nama_penyebab }}</li>
+                    {% endfor %}
+                  </ul>
+
+                  {% if penyakit.saran %}
+                  <h6 class="mb-3">Saran Penanganan:</h6>
+                  <p>{{ penyakit.saran }}</p>
+                  {% endif %}
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+{% endblock %}

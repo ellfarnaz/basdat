@@ -1,0 +1,241 @@
+{% extends "admin/base.html" %} {% block content %}
+<div class="container-fluid">
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <h1 class="h3 text-gray-800 mb-0">Kelola Penyakit</h1>
+    <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#tambahPenyakitModal"><i class="fas fa-plus me-2"></i>Tambah Penyakit</button>
+  </div>
+
+  <!-- Tabel Penyakit -->
+  <div class="card shadow mb-4">
+    <div class="card-body">
+      <div class="table-responsive">
+        <table class="table table-bordered" id="dataTable" width="100%" cellspacing="0">
+          <thead>
+            <tr>
+              <th width="5%">No</th>
+              <th width="15%">Gambar</th>
+              <th width="20%">Nama Penyakit</th>
+              <th width="25%">Gejala</th>
+              <th width="25%">Penyebab</th>
+              <th width="10%">Aksi</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for penyakit in penyakit_list %}
+            <tr>
+              <td>{{ loop.index }}</td>
+              <td class="text-center">
+                {% if penyakit.images %}
+                <img src="{{ url_for('static', filename='images/penyakit/' + penyakit.images) }}" alt="{{ penyakit.nama_penyakit }}" class="img-thumbnail" style="max-height: 100px" />
+                {% else %}
+                <img src="{{ url_for('static', filename='images/default-tooth.jpg') }}" alt="Default" class="img-thumbnail" style="max-height: 100px" />
+                {% endif %}
+              </td>
+              <td>
+                <strong>{{ penyakit.nama_penyakit }}</strong>
+                <div class="small text-muted mt-1">{{ penyakit.desk_penyakit|truncate(50) }}</div>
+              </td>
+              <td>
+                <ul class="list-unstyled mb-0">
+                  {% for gejala in gejala_list %} {% if gejala.id_gejala in penyakit.gejala_ids %}
+                  <li><i class="fas fa-circle text-primary me-2 small"></i>{{ gejala.nama_gejala }}</li>
+                  {% endif %} {% endfor %}
+                </ul>
+              </td>
+              <td>
+                <ul class="list-unstyled mb-0">
+                  {% for penyebab in penyebab_list %} {% if penyebab.id_penyebab in penyakit.penyebab_ids %}
+                  <li><i class="fas fa-circle text-info me-2 small"></i>{{ penyebab.nama_penyebab }}</li>
+                  {% endif %} {% endfor %}
+                </ul>
+              </td>
+              <td>
+                <div class="btn-group">
+                  <button class="btn btn-sm btn-info" data-bs-toggle="modal" data-bs-target="#editPenyakitModal{{ penyakit.id_penyakit }}" title="Edit">
+                    <i class="fas fa-edit"></i>
+                  </button>
+                  <form action="{{ url_for('hapus_penyakit', id_penyakit=penyakit.id_penyakit) }}" method="POST" class="d-inline">
+                    <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('Yakin ingin menghapus?')" title="Hapus">
+                      <i class="fas fa-trash"></i>
+                    </button>
+                  </form>
+                </div>
+              </td>
+            </tr>
+
+            <!-- Modal Edit -->
+            <div class="modal fade" id="editPenyakitModal{{ penyakit.id_penyakit }}" tabindex="-1">
+              <div class="modal-dialog modal-lg">
+                <div class="modal-content">
+                  <div class="modal-header">
+                    <h5 class="modal-title">Edit Penyakit</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                  </div>
+                  <form action="{{ url_for('edit_penyakit', id_penyakit=penyakit.id_penyakit) }}" method="POST" enctype="multipart/form-data">
+                    <div class="modal-body">
+                      <div class="row">
+                        <div class="col-md-6">
+                          <div class="mb-3">
+                            <label class="form-label">Nama Penyakit</label>
+                            <input type="text" class="form-control" name="nama_penyakit" value="{{ penyakit.nama_penyakit }}" required />
+                          </div>
+                          <div class="mb-3">
+                            <label class="form-label">Deskripsi</label>
+                            <textarea class="form-control" name="desk_penyakit" rows="4" required>{{ penyakit.desk_penyakit }}</textarea>
+                          </div>
+                          <div class="mb-3">
+                            <label class="form-label">Saran Penanganan</label>
+                            <textarea class="form-control" name="saran" rows="4">{{ penyakit.saran }}</textarea>
+                          </div>
+                        </div>
+                        <div class="col-md-6">
+                          <div class="mb-3">
+                            <label class="form-label">Gejala</label>
+                            <select class="form-select select2" name="gejala[]" multiple required data-placeholder="Pilih gejala...">
+                              {% for gejala in gejala_list %}
+                              <option value="{{ gejala.id_gejala }}" {% if gejala.id_gejala in penyakit.gejala_ids %}selected{% endif %}>{{ gejala.nama_gejala }}</option>
+                              {% endfor %}
+                            </select>
+                          </div>
+                          <div class="mb-3">
+                            <label class="form-label">Penyebab</label>
+                            <select class="form-select select2" name="penyebab[]" multiple required data-placeholder="Pilih penyebab...">
+                              {% for penyebab in penyebab_list %}
+                              <option value="{{ penyebab.id_penyebab }}" {% if penyebab.id_penyebab in penyakit.penyebab_ids %}selected{% endif %}>{{ penyebab.nama_penyebab }}</option>
+                              {% endfor %}
+                            </select>
+                          </div>
+                          <div class="mb-3">
+                            <label class="form-label">Gambar</label>
+                            <input type="file" class="form-control" name="gambar" accept="image/*" />
+                            {% if penyakit.images %}
+                            <div class="mt-2">
+                              <img src="{{ url_for('static', filename='images/penyakit/' + penyakit.images) }}" alt="{{ penyakit.nama_penyakit }}" class="img-thumbnail" style="max-height: 150px" />
+                            </div>
+                            {% endif %}
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                    <div class="modal-footer">
+                      <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
+                      <button type="submit" class="btn btn-primary">Simpan</button>
+                    </div>
+                  </form>
+                </div>
+              </div>
+            </div>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal Tambah -->
+<div class="modal fade" id="tambahPenyakitModal" tabindex="-1">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Tambah Penyakit</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <form action="{{ url_for('tambah_penyakit') }}" method="POST" enctype="multipart/form-data">
+        <div class="modal-body">
+          <div class="row">
+            <div class="col-md-6">
+              <div class="mb-3">
+                <label class="form-label">Nama Penyakit</label>
+                <input type="text" class="form-control" name="nama_penyakit" required />
+              </div>
+              <div class="mb-3">
+                <label class="form-label">Deskripsi</label>
+                <textarea class="form-control" name="desk_penyakit" rows="4" required></textarea>
+              </div>
+              <div class="mb-3">
+                <label class="form-label">Saran Penanganan</label>
+                <textarea class="form-control" name="saran" rows="4"></textarea>
+              </div>
+            </div>
+            <div class="col-md-6">
+              <div class="mb-3">
+                <label class="form-label">Gejala</label>
+                <select class="form-select select2" name="gejala[]" multiple required data-placeholder="Pilih gejala...">
+                  {% for gejala in gejala_list %}
+                  <option value="{{ gejala.id_gejala }}">{{ gejala.nama_gejala }}</option>
+                  {% endfor %}
+                </select>
+              </div>
+              <div class="mb-3">
+                <label class="form-label">Penyebab</label>
+                <select class="form-select select2" name="penyebab[]" multiple required data-placeholder="Pilih penyebab...">
+                  {% for penyebab in penyebab_list %}
+                  <option value="{{ penyebab.id_penyebab }}">{{ penyebab.nama_penyebab }}</option>
+                  {% endfor %}
+                </select>
+              </div>
+              <div class="mb-3">
+                <label class="form-label">Gambar</label>
+                <input type="file" class="form-control" name="gambar" accept="image/*" />
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
+          <button type="submit" class="btn btn-primary">Simpan</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+{% block extra_css %}
+<link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+<style>
+  .select2-container--bootstrap-5 .select2-selection {
+    min-height: 100px;
+  }
+  .select2-container--bootstrap-5 .select2-selection--multiple .select2-selection__rendered {
+    padding: 0.5rem;
+  }
+  .select2-container--bootstrap-5 .select2-selection--multiple .select2-selection__choice {
+    background-color: #0d6efd;
+    color: white;
+    border: none;
+    padding: 0.25rem 0.5rem;
+    margin: 0.2rem;
+  }
+  .select2-container--bootstrap-5 .select2-selection--multiple .select2-selection__choice__remove {
+    color: white;
+    margin-right: 0.5rem;
+  }
+  .table td {
+    vertical-align: middle;
+  }
+</style>
+{% endblock %} {% block extra_js %}
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+<script>
+  $(document).ready(function () {
+    $(".select2").select2({
+      theme: "bootstrap-5",
+      width: "100%",
+      dropdownParent: $(this).closest(".modal"),
+    });
+
+    // Reinitialize Select2 when modal is shown
+    $(".modal").on("shown.bs.modal", function () {
+      $(this)
+        .find(".select2")
+        .select2({
+          theme: "bootstrap-5",
+          width: "100%",
+          dropdownParent: $(this),
+        });
+    });
+  });
+</script>
+{% endblock %} {% endblock %}

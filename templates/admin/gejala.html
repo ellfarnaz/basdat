@@ -1,0 +1,114 @@
+{% extends "admin/base.html" %} {% block title %}Kelola Gejala - SisPenGi{% endblock %} {% block page_title %}Kelola Gejala{% endblock %} {% block content %}
+<div class="container-fluid">
+  <!-- Tombol Tambah -->
+  <div class="mb-3">
+    <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#tambahGejalaModal"><i class="fas fa-plus me-2"></i>Tambah Gejala</button>
+  </div>
+
+  <!-- Tabel Gejala -->
+  <div class="card">
+    <div class="card-body">
+      <div class="table-responsive">
+        <table class="table table-striped">
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>Nama Gejala</th>
+              <th>Dibuat Oleh</th>
+              <th>Aksi</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for gejala in gejala_list %}
+            <tr>
+              <td>{{ gejala.id_gejala }}</td>
+              <td>{{ gejala.nama_gejala }}</td>
+              <td>{{ gejala.nama_admin }}</td>
+              <td>
+                <button class="btn btn-sm btn-info" data-bs-toggle="modal" data-bs-target="#editGejalaModal{{ gejala.id_gejala }}">
+                  <i class="fas fa-edit"></i>
+                </button>
+                <button class="btn btn-sm btn-danger" data-bs-toggle="modal" data-bs-target="#hapusGejalaModal{{ gejala.id_gejala }}">
+                  <i class="fas fa-trash"></i>
+                </button>
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal Tambah Gejala -->
+<div class="modal fade" id="tambahGejalaModal" tabindex="-1">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Tambah Gejala Baru</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <form action="{{ url_for('tambah_gejala') }}" method="POST">
+        <div class="modal-body">
+          <div class="mb-3">
+            <label for="nama_gejala" class="form-label">Nama Gejala</label>
+            <input type="text" class="form-control" id="nama_gejala" name="nama_gejala" required />
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
+          <button type="submit" class="btn btn-primary">Simpan</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- Modal Edit dan Hapus untuk setiap gejala -->
+{% for gejala in gejala_list %}
+<!-- Modal Edit -->
+<div class="modal fade" id="editGejalaModal{{ gejala.id_gejala }}" tabindex="-1">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Edit Gejala</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <form action="{{ url_for('edit_gejala', id_gejala=gejala.id_gejala) }}" method="POST">
+        <div class="modal-body">
+          <div class="mb-3">
+            <label for="nama_gejala{{ gejala.id_gejala }}" class="form-label">Nama Gejala</label>
+            <input type="text" class="form-control" id="nama_gejala{{ gejala.id_gejala }}" name="nama_gejala" value="{{ gejala.nama_gejala }}" required />
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
+          <button type="submit" class="btn btn-primary">Simpan Perubahan</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- Modal Hapus -->
+<div class="modal fade" id="hapusGejalaModal{{ gejala.id_gejala }}" tabindex="-1">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Konfirmasi Hapus</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <p>Apakah Anda yakin ingin menghapus gejala "{{ gejala.nama_gejala }}"?</p>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
+        <form action="{{ url_for('hapus_gejala', id_gejala=gejala.id_gejala) }}" method="POST" class="d-inline">
+          <button type="submit" class="btn btn-danger">Hapus</button>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+{% endfor %} {% endblock %}

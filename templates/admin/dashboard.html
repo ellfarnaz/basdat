@@ -1,0 +1,58 @@
+{% extends "admin/base.html" %} {% block title %}Dashboard - SisPenGi{% endblock %} {% block page_title %}Dashboard{% endblock %} {% block content %}
+<!-- Statistics Cards -->
+<div class="row mb-4">
+  <div class="col-md-4">
+    <div class="card stats-card bg-primary text-white">
+      <div class="card-body">
+        <h5 class="card-title">Total Penyakit</h5>
+        <h2 class="mb-0">{{ total_penyakit }}</h2>
+      </div>
+    </div>
+  </div>
+  <div class="col-md-4">
+    <div class="card stats-card bg-success text-white">
+      <div class="card-body">
+        <h5 class="card-title">Total Gejala</h5>
+        <h2 class="mb-0">{{ total_gejala }}</h2>
+      </div>
+    </div>
+  </div>
+  <div class="col-md-4">
+    <div class="card stats-card bg-info text-white">
+      <div class="card-body">
+        <h5 class="card-title">Total Penyebab</h5>
+        <h2 class="mb-0">{{ total_penyebab }}</h2>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Recent Activities -->
+<div class="card">
+  <div class="card-header">
+    <h5 class="mb-0">Aktivitas Terbaru</h5>
+  </div>
+  <div class="card-body">
+    <div class="table-responsive">
+      <table class="table">
+        <thead>
+          <tr>
+            <th>Tanggal</th>
+            <th>Aktivitas</th>
+            <th>Admin</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for activity in recent_activities %}
+          <tr>
+            <td>{{ activity.date }}</td>
+            <td>{{ activity.description }}</td>
+            <td>{{ activity.admin }}</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+{% endblock %}
